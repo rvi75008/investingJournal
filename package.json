@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "eslint": "^8.56.0",
+    "husky": "^8.0.3",
+    "prettier": "^3.2.4",
+    "pretty-quick": "^4.0.0",
+    "rimraf": "^5.0.5"
+  }
+    "husky": {
+        "hooks": {
+            "pre-commit": "pretty-quick --staged"
+        }
+    }
+     "scripts": {
+    "lint": "eslint ./src --fix --ext .ts",
+  },
+}
