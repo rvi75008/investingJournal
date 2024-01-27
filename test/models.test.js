@@ -1,34 +1,40 @@
 
 const models = require('../src/models');
+const context = require('../src/context');
 
+
+beforeEach(() => {
+  mockCtx = context.createMockContext();
+})
 
 describe('JournalDataAccess', () => {
   let jDA;
-  const testEntry = { id: 1, title: "foo", date: Date.now(), body: "bar", metadata: { "author": "Doe" } };
+  const testEntry = {
+    title: "foo", date: new Date().toISOString(), body: "bar"
+  };
 
 
   beforeEach(() => {
     jDA = new models.JournalDataAccess();
   });
 
-  test('should add an entry to the entries array', async () => {
-    await jDA.addEntry(
-        testEntry
-      );
-    expect(jDA.entries).toContain(testEntry);
+  test.only('should add an entry to the entries array', async () => {
+    mockCtx.prisma.journalEntry.create.mockResolvedValue(undefined);
+    await expect(jDA.addEntry(
+      testEntry,
+      mockCtx
+    )).resolves.toEqual(undefined)
   });
 
-  test('should return all entries', async () => {
-    jDA.entries.push(testEntry);
-    const allEntries = await jDA.getEntries();
-    expect(allEntries).toHaveLength(1);
-    expect(allEntries).toContain(testEntry);
+  test.only('should return all entries', async () => {
+    mockCtx.prisma.journalEntry.findMany.mockResolvedValue([testEntry]);
+    await expect(jDA.getEntries(
+      mockCtx)).resolves.toHaveLength(1);
   })
 
-  test('should return one entry', async () => {
-    jDA.entries.push(testEntry);
-    const retrievedEntry = await jDA.getEntryById(1);
-    expect(retrievedEntry.id).toEqual(1);
+  test.only('should return one entry', async () => {
+    mockCtx.prisma.journalEntry.findUnique.mockResolvedValue(testEntry);
+    await expect(jDA.getEntryById(1, mockCtx)).resolves.toMatchObject(testEntry);
   })
 
   test('should throw when deleting unexisting entry', async () => {

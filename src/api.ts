@@ -1,17 +1,27 @@
+
 import * as express from 'express';
-import { JournalEntry } from './models'
-import { JournalDataAccess } from './models';
+import { JournalDataAccess, JournalEntry } from './models';
+import { entrySchema } from './schemaValidation';
+import { Context } from './context'
+import { PrismaClient, Prisma } from '@prisma/client'
 
 const app = express();
 const journalDataAccess = new JournalDataAccess();
+const prisma = new PrismaClient()
 
-app.post('/entries', async (req, res) => {
-  const entry: JournalEntry = req.body;
-  await journalDataAccess.addEntry(entry);
+
+app.post('/entries', async (req: express.Request, res: express.Response) => {
+  const validatedEntry = entrySchema.parse(req.body);
+  if (!validatedEntry) {
+    res.status(400).send('Invalid request body');
+    return;
+  }
+
+  await journalDataAccess.addEntry(validatedEntry, { prisma: prisma });
   res.status(201).send('Entry created successfully');
 });
 
-app.get('/entries', async (req, res) => {
+app.get('/entries', async (req: express.Request, res: express.Response) => {
   const entries: JournalEntry[] = await journalDataAccess.getEntries();
   res.send(entries);
 });
