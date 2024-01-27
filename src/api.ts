@@ -51,16 +51,7 @@ app.put('/entries/:id', async (req, res) => {
   const entryId = parseInt(req.params.id, 10);
   const updatedEntry: JournalEntry = req.body;
 
-  // Check if entry exists
-  const matchingEntry = await journalDataAccess.getEntryById(entryId);
-  if (!matchingEntry) {
-    res.status(404).send(`Entry with ID ${entryId} not found`);
-    return;
-  }
 
-  // Update the entry in the data store
-  matchingEntry.updateEntry(updatedEntry);
-  await journalDataAccess.saveEntries();
 
   // Send confirmation message
   res.send('Entry updated successfully');
