@@ -1,7 +1,8 @@
 {
   "dependencies": {
-    "@prisma/client": "5.8.1",
+    "@prisma/client": "^5.9.1",
     "@types/jest": "^29.5.11",
+    "cliui": "^6.0.0",
     "eslint": "^8.56.0",
     "express": "^4.18.2",
     "node-fetch": "^3.3.2",
@@ -9,6 +10,7 @@
     "prettier": "^3.2.5",
     "pretty-quick": "^4.0.0",
     "rimraf": "^5.0.5",
+    "supertest": "^6.3.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
     "zod": "^3.22.4"
@@ -19,7 +21,7 @@
     "@types/node": "^20.11.5",
     "jest": "^29.7.0",
     "jest-mock-extended": "^3.0.5",
-    "prisma": "^5.8.1",
+    "prisma": "^5.9.1",
     "ts-jest": "^29.1.2"
   },
   "scripts": {
