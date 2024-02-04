@@ -1,68 +1,82 @@
-
 const models = require('../src/models');
 const context = require('../src/context');
 
-
 beforeEach(() => {
   mockCtx = context.createMockContext();
-})
+});
 
 describe('JournalDataAccess', () => {
   let jDA;
   const testEntry = {
-    title: "foo", date: new Date().toISOString(), body: "bar"
+    title: 'foo',
+    date: new Date().toISOString(),
+    body: 'bar',
   };
-
 
   beforeEach(() => {
     jDA = new models.JournalDataAccess();
   });
 
-  test.only('should add an entry to the entries array', async () => {
+  test('should add an entry to the entries array', async () => {
     mockCtx.prisma.journalEntry.create.mockResolvedValue(undefined);
-    await expect(jDA.addEntry(
-      testEntry,
-      mockCtx
-    )).resolves.toEqual(undefined)
+    await expect(jDA.addEntry(testEntry, mockCtx)).resolves.toEqual(undefined);
   });
 
-  test.only('should return all entries', async () => {
+  test('should return all entries', async () => {
     mockCtx.prisma.journalEntry.findMany.mockResolvedValue([testEntry]);
-    await expect(jDA.getEntries(
-      mockCtx)).resolves.toHaveLength(1);
-  })
+    await expect(jDA.getEntries(mockCtx)).resolves.toHaveLength(1);
+  });
 
-  test.only('should return one entry', async () => {
+  test('should return one entry', async () => {
     mockCtx.prisma.journalEntry.findUnique.mockResolvedValue(testEntry);
-    await expect(jDA.getEntryById(1, mockCtx)).resolves.toMatchObject(testEntry);
-  })
+    await expect(jDA.getEntryById(1, mockCtx)).resolves.toMatchObject(
+      testEntry,
+    );
+  });
 
   test('should throw when deleting unexisting entry', async () => {
-    await expect(async () => {
-      await jDA.deleteEntry(13);
-  }).rejects.toThrowError(models.EntryNotFoundError);
-  })
+    mockCtx.prisma.journalEntry.delete.mockResolvedValue(undefined);
+    try {
+      await jDA.deleteEntry(13, mockCtx);
+    } catch (error) {
+      expect(error.message).toMatch('Entry with id 13 not found');
+    }
+  });
 
   test('should remove an existing entry', async () => {
-    jDA.entries.push(testEntry);
-    let entry2 = { id: 2};
-    jDA.entries.push(entry2);
-    await jDA.deleteEntry(1);
-    expect(jDA.entries).toHaveLength(1);
-    expect(jDA.entries.find((entry) => entry.id === testEntry.id)).toBeUndefined();
-  })
+    mockCtx.prisma.journalEntry.delete.mockResolvedValue(testEntry);
+    await expect(jDA.deleteEntry(1, mockCtx)).resolves.toMatchObject(testEntry);
+  });
 
-  test('should update existing entry', async() => {
-    jDA.entries.push(testEntry);
-    editedEntry = {id: 1, title: 'bar', body: 'foo', date: Date.now(), body: "bar", metadata: { "author": "Doe" } };
-    await jDA.updateEntry(1, editedEntry);
-    expect(jDA.entries[0].title) === 'bar';
-  })
+  test('should update existing entry', async () => {
+    mockCtx.prisma.journalEntry.findUnique.mockResolvedValue(testEntry);
+    mockCtx.prisma.journalEntry.update.mockResolvedValue();
 
-  test('should throw if updating an unexisting entry', async() => {
-    editedEntry = {id: 2, title: 'bar', body: 'foo', date: Date.now(), body: "bar", metadata: { "author": "Doe" } };
-    await expect(async () => {
-      await jDA.updateEntry(1, editedEntry);
-    }).rejects.toThrowError(models.EntryNotFoundError);
-  })
+    editedEntry = {
+      id: 1,
+      title: 'bar',
+      body: 'foo',
+      date: Date.now(),
+      body: 'bar',
+      metadata: { author: 'Doe' },
+    };
+    await jDA.updateEntry(1, mockCtx, editedEntry);
+  });
+
+  test('should throw if updating unknown entry', async () => {
+    mockCtx.prisma.journalEntry.findUnique.mockResolvedValue(undefined);
+    editedEntry = {
+      id: 2,
+      title: 'bar',
+      body: 'foo',
+      date: Date.now(),
+      body: 'bar',
+      metadata: { author: 'Doe' },
+    };
+    try {
+      await jDA.updateEntry(2, mockCtx, editedEntry);
+    } catch (error) {
+      expect(error.message).toMatch('Entry with id 2 not found');
+    }
+  });
 });

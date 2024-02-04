@@ -39,23 +39,33 @@ export class JournalDataAccess {
     );
   }
 
-  // async updateEntry(entryId: number, updatedEntry: JournalEntry): Promise<void> {
-  //   const existingEntry = this.entries.find((entry) => entry.id === entryId);
-  //   if (!existingEntry) {
-  //     throw new EntryNotFoundError(`Entry with id ${entryId} not found`);
-  //   }
-  //   else {
-  //     this.deleteEntry(entryId);
-  //     this.addEntry(updatedEntry);
-  //     this.saveEntries();
-  //   }
-  // }
+  async updateEntry(entryId: number, ctx: Context, updatedEntry: JournalEntry): Promise<void> {
+    try {
+      const existingEntry = await ctx.prisma.journalEntry.findUnique({
+        where: { id: entryId },
+      });
 
-  async deleteEntry(id: number, ctx: Context): Promise<JournalEntry> {
-    return await ctx.prisma.journalEntry.delete({where: {id: id}});
+      if (!existingEntry) {
+        throw new EntryNotFoundError(`Entry with id ${entryId} not found`);
+      }
+
+      await ctx.prisma.journalEntry.update({
+        where: { id: entryId },
+        data: updatedEntry,
+      });
+    } catch (error) {
+        console.error("Error updating entry:", error);
+      throw error;
+    }
   }
 
-  // private async saveEntries(): Promise<void> {
-  //   // Implement saving mechanism (e.g., file storage, database)
-  // }
+  async deleteEntry(id: number, ctx: Context): Promise<JournalEntry> {
+    const deletedEntry = await ctx.prisma.journalEntry.delete({where: {id: id}});
+    if (!deletedEntry) {
+      throw new EntryNotFoundError(`Entry with id ${id} not found`);
+    }
+    else{
+      return deletedEntry
+    }
+  }
 }

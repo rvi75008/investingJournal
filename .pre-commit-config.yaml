@@ -5,3 +5,9 @@ repos:
     -   id: check-yaml
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
+-   repo: local
+    hooks:
+    -   id: format
+        name: format
+        language: system
+        entry: "bash pre-commit-format-javascript.sh"
